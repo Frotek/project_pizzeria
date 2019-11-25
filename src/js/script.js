@@ -58,7 +58,10 @@
       this.id = id;
       this.data = data;
       this.renderInMenu();
-      console.log('new product=', this);
+      this.initAccordion();
+
+      this.element = {};
+      // console.log('new product=', this);
     }
 
     renderInMenu() {
@@ -66,7 +69,25 @@
       this.element = utils.createDOMFromHTML(generatedHTML);
       const menuContainer = document.querySelector(select.containerOf.menu);
       menuContainer.appendChild(this.element);
-      console.log(this.element);
+      // console.log(this.element);
+    }
+
+    initAccordion() {
+      const clickable = this.element.querySelector(select.menuProduct.clickable);
+
+      clickable.addEventListener('click', function (event) {
+        event.preventDefault();
+        const allArticles = document.querySelectorAll(select.all.menuProducts);
+        // console.log("parents: ", allArticles);
+        const thisArticle = event.target.parentNode.parentNode;
+
+        for (let article of allArticles) {
+          article.classList.remove(classNames.menuProduct.wrapperActive);
+        }
+
+        thisArticle.classList.add(classNames.menuProduct.wrapperActive);
+
+      });
     }
   }
 
@@ -74,7 +95,7 @@
   const app = {
     initMenu: function () {
       this.initData();
-      console.log(this.data);
+      // console.log(this.data);
 
       for (let productData in this.data.products) {
         new Product(productData, this.data.products[productData]);
