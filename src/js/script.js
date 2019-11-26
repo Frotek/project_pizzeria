@@ -73,21 +73,36 @@
     }
 
     initAccordion() {
-      const clickable = this.element.querySelector(select.menuProduct.clickable);
+      const clickableHeader = this.element.querySelector(select.menuProduct.clickable);
 
-      clickable.addEventListener('click', function (event) {
-        event.preventDefault();
+
+      clickableHeader.addEventListener('click', clickHandlerHeader);
+
+
+      function clickHandlerHeader(event) {
         const allArticles = document.querySelectorAll(select.all.menuProducts);
-        // console.log("parents: ", allArticles);
-        const thisArticle = event.target.parentNode.parentNode;
+        // console.log("parents", allArticles);
 
-        for (let article of allArticles) {
-          article.classList.remove(classNames.menuProduct.wrapperActive);
+        let thisArticle = event.target.parentNode.parentNode; //default when clicked on h3
+
+        if (thisArticle.tagName !== "ARTICLE") { // if clicked on i
+          thisArticle = thisArticle.parentNode;
         }
 
-        thisArticle.classList.add(classNames.menuProduct.wrapperActive);
+        // console.log(thisArticle.tagName);
 
-      });
+        for (let article of allArticles) {
+
+          if (article != thisArticle) {
+            article.classList.remove(classNames.menuProduct.wrapperActive);
+          } else {
+            article.classList.toggle(classNames.menuProduct.wrapperActive);
+          }
+
+        }
+
+      }
+
     }
   }
 
