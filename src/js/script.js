@@ -74,35 +74,24 @@
 
     initAccordion() {
       const clickableHeader = this.element.querySelector(select.menuProduct.clickable);
-
-
       clickableHeader.addEventListener('click', clickHandlerHeader);
-
-
       function clickHandlerHeader(event) {
+        console.log(this);
         const allArticles = document.querySelectorAll(select.all.menuProducts);
         // console.log("parents", allArticles);
 
-        let thisArticle = event.target.parentNode.parentNode; //default when clicked on h3
-
-        if (thisArticle.tagName !== "ARTICLE") { // if clicked on i
-          thisArticle = thisArticle.parentNode;
-        }
+        let thisArticle = this.parentNode;
 
         // console.log(thisArticle.tagName);
 
         for (let article of allArticles) {
-
           if (article != thisArticle) {
             article.classList.remove(classNames.menuProduct.wrapperActive);
           } else {
             article.classList.toggle(classNames.menuProduct.wrapperActive);
           }
-
         }
-
       }
-
     }
   }
 
