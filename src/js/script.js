@@ -58,9 +58,11 @@
       this.id = id;
       this.data = data;
       this.renderInMenu();
+      this.getElements();
       this.initAccordion();
-
+      this.initOrderForm();
       this.element = {};
+      this.price = this.data.price;
       // console.log('new product=', this);
     }
 
@@ -72,9 +74,19 @@
       // console.log(this.element);
     }
 
+    getElements() {
+      this.accordionTrigger = this.element.querySelector(select.menuProduct.clickable);
+      this.form = this.element.querySelector(select.menuProduct.form);
+      this.formInputs = this.form.querySelectorAll(select.all.formInputs);
+      this.cartButton = this.element.querySelector(select.menuProduct.cartButton);
+      this.priceElem = this.element.querySelector(select.menuProduct.priceElem);
+    }
+
+
     initAccordion() {
-      const clickableHeader = this.element.querySelector(select.menuProduct.clickable);
+      const clickableHeader = this.accordionTrigger;
       clickableHeader.addEventListener('click', clickHandlerHeader);
+
       function clickHandlerHeader(event) {
         console.log(this);
         const allArticles = document.querySelectorAll(select.all.menuProducts);
@@ -93,8 +105,59 @@
         }
       }
     }
-  }
 
+    initOrderForm() {
+      const thisProduct = this;
+      console.log('initOrderForm');
+      this.form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        thisProduct.processOrder();
+      });
+
+      for (let input of this.formInputs) {
+        input.addEventListener('change', function () {
+          thisProduct.processOrder();
+        });
+      }
+
+      this.cartButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        thisProduct.processOrder();
+      });
+    }
+
+    processOrder() {
+      console.log('processOrder');
+      this.price = this.data.price;
+      const formData = utils.serializeFormToObject(this.form);
+
+      // console.log('formData', formData);
+      for (let param in this.data.params) {
+
+        for (let option in this.data.params[param].options) {
+          let isDefault = this.data.params[param].options[option].default;
+          let thisPrice = this.data.params[param].options[option].price;
+
+          if (typeof (isDefault) == 'undefined') {
+            isDefault = false;
+          }
+          //console.log("klucz: ", option, "default: ", isDefault, "price: ", thisPrice);
+
+          const optionSelected = formData.hasOwnProperty(param) && formData[param].indexOf(option) > -1;
+          // console.log(optionSelected);
+          if (optionSelected && !isDefault) {
+            // console.log("dodaje");
+            this.price = this.price + thisPrice;
+          } else if (!optionSelected && isDefault) {
+            // console.log("odejmuje")
+            this.price = this.price - thisPrice;
+          }
+        }
+      }
+      this.priceElem.innerHTML = this.price;
+      // console.error(this.price);
+    }
+  }
 
   const app = {
     initMenu: function () {
