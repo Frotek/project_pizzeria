@@ -57,13 +57,13 @@
     constructor(id, data) {
       this.id = id;
       this.data = data;
+      this.element = {};
       this.renderInMenu();
       this.getElements();
       this.initAccordion();
       this.initOrderForm();
-      this.element = {};
+      this.processOrder(); // invoke once for setup everything properly
       this.price = this.data.price;
-      // console.log('new product=', this);
     }
 
     renderInMenu() {
@@ -80,7 +80,10 @@
       this.formInputs = this.form.querySelectorAll(select.all.formInputs);
       this.cartButton = this.element.querySelector(select.menuProduct.cartButton);
       this.priceElem = this.element.querySelector(select.menuProduct.priceElem);
+      this.imageWrapper = this.element.querySelector(select.menuProduct.imageWrapper);
+      console.log('imgwrap', this.imageWrapper);
     }
+
 
 
     initAccordion() {
@@ -128,6 +131,7 @@
 
     processOrder() {
       console.log('processOrder');
+      const self = this;
       this.price = this.data.price;
       const formData = utils.serializeFormToObject(this.form);
 
@@ -152,8 +156,18 @@
             // console.log("odejmuje")
             this.price = this.price - thisPrice;
           }
+          //  qs(`.${param}-${option}`)
+
+          let thisImage = self.element.querySelector(`.${param}-${option}`)
+
+          if (optionSelected && thisImage) { // check if exists
+            thisImage.classList.add(classNames.menuProduct.imageVisible);
+          } else if (thisImage) { // else but still if exists
+            thisImage.classList.remove(classNames.menuProduct.imageVisible);
+          }
         }
       }
+
       this.priceElem.innerHTML = this.price;
       // console.error(this.price);
     }
