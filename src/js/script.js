@@ -62,8 +62,18 @@
       this.getElements();
       this.initAccordion();
       this.initOrderForm();
+      this.initAmountWidget();
       this.processOrder(); // invoke once for setup everything properly
       this.price = this.data.price;
+      console.log('nowy produkt= ', this);
+    }
+
+    initAmountWidget() {
+      const self = this;
+      this.amountWidget = new AmountWidget(this.amountWidgetElem);
+      this.amountWidgetElem.addEventListener('updated', function (e) {
+        self.processOrder();
+      })
     }
 
     renderInMenu() {
@@ -81,6 +91,7 @@
       this.cartButton = this.element.querySelector(select.menuProduct.cartButton);
       this.priceElem = this.element.querySelector(select.menuProduct.priceElem);
       this.imageWrapper = this.element.querySelector(select.menuProduct.imageWrapper);
+      this.amountWidgetElem = this.element.querySelector(select.menuProduct.amountWidget);
       console.log('imgwrap', this.imageWrapper);
     }
 
@@ -135,7 +146,7 @@
       this.price = this.data.price;
       const formData = utils.serializeFormToObject(this.form);
 
-      // console.log('formData', formData);
+      console.log('formData', formData);
       for (let param in this.data.params) {
 
         for (let option in this.data.params[param].options) {
@@ -164,14 +175,101 @@
             thisImage.classList.add(classNames.menuProduct.imageVisible);
           } else if (thisImage) { // else but still if exists
             thisImage.classList.remove(classNames.menuProduct.imageVisible);
+            // console.log('obrazek= 'thisImage);
           }
         }
       }
 
+      this.price *= this.amountWidget.value;
       this.priceElem.innerHTML = this.price;
       // console.error(this.price);
     }
   }
+
+  class AmountWidget {
+    constructor(element) {
+      this.element = element;
+      this.input = null;
+      this.linkDecrease = null;
+      this.linkIncrease = null;
+      this.value = null;
+
+      this.getElements(this.element);
+      this.input.value = settings.amountWidget.defaultValue;
+      this.setValue(this.input.value);
+      this.initActions();
+
+      console.log(this);
+      console.log(this.element);
+    }
+
+    getElements() {
+      this.input = this.element.querySelector(select.widgets.amount.input);
+      this.linkDecrease = this.element.querySelector(select.widgets.amount.linkDecrease);
+      this.linkIncrease = this.element.querySelector(select.widgets.amount.linkIncrease);
+    }
+
+
+    setValue(value) {
+
+      let definedValues = {
+        min: settings.amountWidget.defaultMin,
+        max: settings.amountWidget.defaultMax
+      };
+
+      const newValue = parseInt(value);
+
+      // validations
+      if (Number.isNaN(newValue) == false) { // if not NaN
+        if (newValue >= definedValues.min && newValue <= definedValues.max) { //if in range 1-9
+          this.value = newValue;
+          this.announce();
+          this.input.value = this.value;
+        } else if (this.input.value < definedValues.min) { // if less than min
+          this.input.value = definedValues.min;
+          this.value = this.input.value;
+          this.announce();
+        } else if (this.input.value > definedValues.max) { // if more than max
+          this.input.value = definedValues.max;
+          this.value = this.input.value;
+          this.announce();
+        }
+      } else { //if Nan -> set value to min
+        this.input.value = definedValues.min;
+        this.value = this.input.value;
+        this.announce();
+      }
+
+    }
+
+    initActions() {
+      const self = this;
+
+      this.input.addEventListener('change', function () {
+        console.log("changed");
+
+        self.setValue(self.input.value);
+      });
+
+      this.linkDecrease.addEventListener('click', function (event) {
+        console.log("clicked -1");
+        event.preventDefault();
+        self.setValue(self.value - 1);
+      });
+
+      this.linkIncrease.addEventListener('click', function (event) {
+        console.log("changed +1");
+        event.preventDefault();
+        self.setValue(self.value + 1);
+      });
+    }
+
+    announce() {
+      const event = new Event('updated');
+      this.element.dispatchEvent(event);
+    }
+  }
+
 
   const app = {
     initMenu: function () {
