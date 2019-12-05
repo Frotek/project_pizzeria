@@ -223,17 +223,15 @@
       if (Number.isNaN(newValue) == false) { // if not NaN
         if (newValue >= definedValues.min && newValue <= definedValues.max) { //if in range 1-9
           this.value = newValue;
-          this.input.value = this.value;
         } else if (this.input.value < definedValues.min) { // if less than min
-          this.input.value = definedValues.min;
-          this.value = this.input.value;
+          this.value = definedValues.min;
         } else if (this.input.value > definedValues.max) { // if more than max
-          this.input.value = definedValues.max;
-          this.value = this.input.value;
+          this.value = definedValues.max;
         }
       } else { //if Nan -> set value to min
-        this.input.value = definedValues.min;
+        this.value = definedValues.min;
       }
+      this.input.value = this.value;
       this.announce();
     }
 
