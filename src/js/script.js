@@ -328,13 +328,6 @@
 
       this.totalPrice = this.subtotalPrice + this.deliveryFee;
 
-      console.log(`
-      TOTALNA CENA! MÓWIE CI! \n
-      totalNumber: ${this.totalNumber} \n
-      subtotalPrice: ${this.subtotalPrice} \n
-      totalPrice: ${this.totalPrice} \n
-      DONT DELAY! BUY TODAY!
-      `)
     }
 
     getElements(element) {
