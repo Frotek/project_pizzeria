@@ -95,7 +95,7 @@
       this.initAmountWidget();
       this.processOrder(); // invoke once for setup everything properly
       this.price = this.data.price;
-      console.log('nowy produkt= ', this);
+      // console.log('nowy produkt= ', this);
     }
 
     initAmountWidget() {
@@ -122,7 +122,7 @@
       this.priceElem = this.element.querySelector(select.menuProduct.priceElem);
       this.imageWrapper = this.element.querySelector(select.menuProduct.imageWrapper);
       this.amountWidgetElem = this.element.querySelector(select.menuProduct.amountWidget);
-      console.log('imgwrap', this.imageWrapper);
+      // console.log('imgwrap', this.imageWrapper);
     }
 
 
@@ -132,7 +132,7 @@
       clickableHeader.addEventListener('click', clickHandlerHeader);
 
       function clickHandlerHeader(event) {
-        console.log(this);
+        // console.log(this);
         const allArticles = document.querySelectorAll(select.all.menuProducts);
         // console.log("parents", allArticles);
 
@@ -152,7 +152,7 @@
 
     initOrderForm() {
       const thisProduct = this;
-      console.log('initOrderForm');
+      // console.log('initOrderForm');
       this.form.addEventListener('submit', function (event) {
         event.preventDefault();
         thisProduct.processOrder();
@@ -172,13 +172,13 @@
     }
 
     processOrder() {
-      console.log('processOrder');
+      // console.log('processOrder');
       const self = this;
       this.params = {};
       this.price = this.data.price;
       const formData = utils.serializeFormToObject(this.form);
 
-      console.log('formData', formData);
+      // console.log('formData', formData);
       for (let param in this.data.params) {
 
         for (let option in this.data.params[param].options) {
@@ -188,7 +188,7 @@
           if (typeof (isDefault) == 'undefined') {
             isDefault = false;
           }
-          //console.log("klucz: ", option, "default: ", isDefault, "price: ", thisPrice);
+          // console.log("klucz: ", option, "default: ", isDefault, "price: ", thisPrice);
 
           const optionSelected = formData.hasOwnProperty(param) && formData[param].indexOf(option) > -1;
           // console.log(optionSelected);
@@ -226,7 +226,7 @@
 
       this.priceElem.innerHTML = this.price;
       // console.error(this.price);
-      console.log(this.params);
+      // console.log(this.params);
     }
   }
 
@@ -243,8 +243,8 @@
       this.setValue(this.input.value);
       this.initActions();
 
-      console.log(this);
-      console.log(this.element);
+      // console.log(this);
+      // console.log(this.element);
     }
 
     getElements() {
@@ -283,19 +283,19 @@
       const self = this;
 
       this.input.addEventListener('change', function () {
-        console.log("changed");
+        // console.log("changed");
 
         self.setValue(self.input.value);
       });
 
       this.linkDecrease.addEventListener('click', function (event) {
-        console.log("clicked -1");
+        // console.log("clicked -1");
         event.preventDefault();
         self.setValue(self.value - 1);
       });
 
       this.linkIncrease.addEventListener('click', function (event) {
-        console.log("changed +1");
+        // console.log("changed +1");
         event.preventDefault();
         self.setValue(self.value + 1);
       });
@@ -313,13 +313,34 @@
       this.products = [];
       this.getElements(element);
       this.initActions();
-      console.log('new Cart', this);
+      this.deliveryFee = settings.cart.defaultDeliveryFee;
+      // console.log('new Cart', this);
+    }
+
+    update() {
+      this.totalNumber = 0;
+      this.subtotalPrice = 0;
+
+      for (let product of this.products) {
+        this.subtotalPrice += product.price;
+        this.totalNumber += product.amount;
+      }
+
+      this.totalPrice = this.subtotalPrice + this.deliveryFee;
+
+      console.log(`
+      TOTALNA CENA! MÓWIE CI! \n
+      totalNumber: ${this.totalNumber} \n
+      subtotalPrice: ${this.subtotalPrice} \n
+      totalPrice: ${this.totalPrice} \n
+      DONT DELAY! BUY TODAY!
+      `)
     }
 
     getElements(element) {
       this.dom = {};
       this.dom.wrapper = element;
-      this.dom.productList = document.querySelector("#product-list");
+      this.dom.productList = element.querySelector(".cart__order-summary");
       this.dom.toggleTrigger = this.dom.wrapper.querySelector(select.cart.toggleTrigger);
     }
 
@@ -331,20 +352,67 @@
     }
 
     add(menuProduct) {
-      console.log("adding product ", menuProduct)
+      // console.log("adding product ", menuProduct)
 
       const generatedHTML = templates.cartProduct(menuProduct)
       const generatedDOM = utils.createDOMFromHTML(generatedHTML);
-
+      this.products.push(new CartProduct(menuProduct, generatedDOM));
       this.dom.productList.appendChild(generatedDOM);
       // console.log(this.element);
-
+      console.warn(this.products);
     }
 
     addToCart(product) {
       product.name = product.data.name;
       product.amount = product.amountWidget.value;
       app.cart.add(product);
+    }
+
+  }
+
+  class CartProduct {
+    constructor(menuProduct, element) {
+      this.menuProduct = menuProduct;
+      this.element = element;
+
+      this.id = menuProduct.id;
+      this.name = menuProduct.name;
+      this.price = menuProduct.price;
+      this.priceSingle = menuProduct.priceSingle;
+      this.amount = menuProduct.amount;
+      this.params = JSON.parse(JSON.stringify(menuProduct.params));
+
+      this.getElements(element);
+      this.initAmountWidget();
+      // console.log(this);
+    }
+
+    getElements(element) {
+      this.dom = {};
+      this.dom.wrapper = element;
+      this.dom.amountWidget = this.dom.wrapper.querySelector(select.cartProduct.amountWidget);
+      this.dom.price = this.dom.wrapper.querySelector(select.cartProduct.price);
+      this.dom.edit = this.dom.wrapper.querySelector(select.cartProduct.edit);
+      this.dom.remove = this.dom.wrapper.querySelector(select.cartProduct.remove);
+    }
+
+    initAmountWidget() {
+      const self = this;
+      this.amountWidget = new AmountWidget(this.dom.amountWidget);
+      this.amountWidget.setValue(this.amount);
+      this.dom.amountWidget.addEventListener('updated', function (e) {
+        console.log(self.amountWidget.value);
+        self.price = self.priceSingle * self.amountWidget.value;
+        console.log(self.price);
+        self.dom.price.innerHTML = self.price;
+
+      });
+
+      this.amount = this.amountWidget.value;
+      this.price = this.priceSingle * this.amount;
+
+      this.dom.price.value = this.price;
+      console.log(this.amountWidget);
     }
 
   }
@@ -365,11 +433,11 @@
 
     init: function () {
       const thisApp = this;
-      //console.log('*** App starting ***');
-      //console.log('thisApp:', thisApp);
-      //console.log('classNames:', classNames);
-      //console.log('settings:', settings);
-      //console.log('templates:', templates);
+      // console.log('*** App starting ***');
+      // console.log('thisApp:', thisApp);
+      // console.log('classNames:', classNames);
+      // console.log('settings:', settings);
+      // console.log('templates:', templates);
       this.initMenu();
       this.initCart();
     },
