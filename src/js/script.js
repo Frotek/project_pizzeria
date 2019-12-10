@@ -302,7 +302,9 @@
     }
 
     announce() {
-      const event = new Event('updated');
+      const event = new CustomEvent('updated', {
+        bubbles: true
+      });
       this.element.dispatchEvent(event);
     }
   }
@@ -328,6 +330,19 @@
 
       this.totalPrice = this.subtotalPrice + this.deliveryFee;
 
+      console.log(`
+      TOTALNA CENA! MÓWIE CI! \n
+      totalNumber: ${this.totalNumber} \n
+      subtotalPrice: ${this.subtotalPrice} \n
+      totalPrice: ${this.totalPrice} \n
+      DONT DELAY! BUY TODAY!
+      `);
+
+      for (let key of this.renderTotalsKeys) {
+        for (let elem of this.dom[key]) {
+          elem.innerHTML = this[key];
+        }
+      }
     }
 
     getElements(element) {
@@ -335,13 +350,37 @@
       this.dom.wrapper = element;
       this.dom.productList = element.querySelector(".cart__order-summary");
       this.dom.toggleTrigger = this.dom.wrapper.querySelector(select.cart.toggleTrigger);
+
+      this.renderTotalsKeys = ['totalNumber', 'totalPrice', 'subtotalPrice', 'deliveryFee'];
+
+      for (let key of this.renderTotalsKeys) {
+        this.dom[key] = this.dom.wrapper.querySelectorAll(select.cart[key]);
+      }
     }
 
     initActions() {
       const self = this;
+
+      this.dom.productList.addEventListener('updated', function () {
+        self.update();
+      });
+
+      this.dom.productList.addEventListener('remove', function () {
+        self.remove(event.detail.cartProduct);
+      });
+
       this.dom.toggleTrigger.addEventListener('click', function (event) {
         self.dom.wrapper.classList.toggle(classNames.cart.wrapperActive);
       });
+    }
+
+    remove(cartProduct) {
+      const ind = this.products.indexOf(cartProduct);
+
+      this.products.splice(ind, 1);
+      console.log(cartProduct.dom.wrapper);
+      document.querySelector(".cart__order-summary").removeChild(cartProduct.dom.wrapper);
+      this.update();
     }
 
     add(menuProduct) {
@@ -353,6 +392,7 @@
       this.dom.productList.appendChild(generatedDOM);
       // console.log(this.element);
       console.warn(this.products);
+      this.update();
     }
 
     addToCart(product) {
@@ -377,7 +417,34 @@
 
       this.getElements(element);
       this.initAmountWidget();
+      this.initActions();
       // console.log(this);
+    }
+
+    remove() {
+      const self = this;
+      const event = new CustomEvent('remove', {
+        bubbles: true,
+        detail: {
+          cartProduct: self
+        }
+      });
+      this.dom.wrapper.dispatchEvent(event);
+    }
+
+    initActions() {
+      const self = this;
+
+      this.dom.edit.addEventListener('click', function (e) {
+        e.preventDefault();
+      });
+
+      this.dom.remove.addEventListener('click', function (e) {
+        e.preventDefault();
+        self.remove();
+        console.log("removed");
+      });
+
     }
 
     getElements(element) {
@@ -398,7 +465,7 @@
         self.price = self.priceSingle * self.amountWidget.value;
         console.log(self.price);
         self.dom.price.innerHTML = self.price;
-
+        //! TUTAJ JEST ŚMIERĆ
       });
 
       this.amount = this.amountWidget.value;
