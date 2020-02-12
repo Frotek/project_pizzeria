@@ -1,88 +1,83 @@
 import { settings, select } from "../settings.js";
+import BaseWidget from "./BaseWidget.js";
 
-class AmountWidget {
+class AmountWidget extends BaseWidget {
   constructor(element) {
-    this.element = element;
-    this.input = null;
-    this.linkDecrease = null;
-    this.linkIncrease = null;
-    this.value = null;
+    super(element, settings.amountWidget.defaultValue);
 
-    this.getElements(this.element);
-    this.input.value = settings.amountWidget.defaultValue;
-    this.setValue(this.input.value);
+    this.getElements(this.dom.wrapper);
     this.initActions();
 
     // console.log(this);
-    // console.log(this.element);
+    // console.log(this.dom.wrapper);
   }
 
   getElements() {
-    this.input = this.element.querySelector(select.widgets.amount.input);
-    this.linkDecrease = this.element.querySelector(
+    this.dom.input = this.dom.wrapper.querySelector(
+      select.widgets.amount.input
+    );
+    this.dom.linkDecrease = this.dom.wrapper.querySelector(
       select.widgets.amount.linkDecrease
     );
-    this.linkIncrease = this.element.querySelector(
+    this.dom.linkIncrease = this.dom.wrapper.querySelector(
       select.widgets.amount.linkIncrease
     );
   }
 
-  setValue(value) {
+
+  isValid(value) {
     let definedValues = {
       min: settings.amountWidget.defaultMin,
       max: settings.amountWidget.defaultMax
     };
 
-    const newValue = parseInt(value);
+    console.log(definedValues);
 
     // validations
-    if (Number.isNaN(newValue) == false) {
+    if (Number.isNaN(value) == false) {
       // if not NaN
-      if (newValue >= definedValues.min && newValue <= definedValues.max) {
+      if (value >= definedValues.min && value <= definedValues.max) {
         //if in range 1-9
-        this.value = newValue;
-      } else if (this.input.value < definedValues.min) {
+        return value;
+      } else if (this.dom.input.value < definedValues.min) {
         // if less than min
-        this.value = definedValues.min;
-      } else if (this.input.value > definedValues.max) {
+        return definedValues.min;
+      } else if (this.dom.input.value > definedValues.max) {
         // if more than max
-        this.value = definedValues.max;
+        return definedValues.max;
+      }else{
+        return definedValues.min;
       }
     } else {
       //if Nan -> set value to min
-      this.value = definedValues.min;
+      return definedValues.min;
     }
-    this.input.value = this.value;
-    this.announce();
+  }
+
+  renderValue(){
+    this.dom.input.value = this.value;
   }
 
   initActions() {
     const self = this;
 
-    this.input.addEventListener("change", function() {
+    this.dom.input.addEventListener("change", function() {
       // console.log("changed");
 
-      self.setValue(self.input.value);
+      self.setValue(self.dom.input.value);
     });
 
-    this.linkDecrease.addEventListener("click", function(event) {
+    this.dom.linkDecrease.addEventListener("click", function(event) {
       // console.log("clicked -1");
       event.preventDefault();
       self.setValue(self.value - 1);
     });
 
-    this.linkIncrease.addEventListener("click", function(event) {
+    this.dom.linkIncrease.addEventListener("click", function(event) {
       // console.log("changed +1");
       event.preventDefault();
       self.setValue(self.value + 1);
     });
-  }
-
-  announce() {
-    const event = new CustomEvent("updated", {
-      bubbles: true
-    });
-    this.element.dispatchEvent(event);
   }
 }
 
