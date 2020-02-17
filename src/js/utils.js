@@ -74,7 +74,20 @@ utils.hourToNumber = function(hour) {
 };
 
 utils.dateToStr = function(dateObj) {
-  return dateObj.toISOString().slice(0, 10);
+  //yyyy-mm-dd
+  let day = dateObj.getDate();
+  let month = dateObj.getMonth() + 1;
+  let year = dateObj.getFullYear();
+
+  if (day < 10) {
+    day = "0" + day;
+  }
+  if (month < 10) {
+    month = "0" + month;
+  }
+
+  console.log(`${year}-${month}-${day}`);
+  return `${year}-${month}-${day}`;
 };
 
 utils.addDays = function(dateStr, days) {

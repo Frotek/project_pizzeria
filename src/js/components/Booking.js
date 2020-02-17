@@ -194,6 +194,9 @@ class Booking {
 
   updateDOM() {
     const self = this;
+
+    let tableStatus = [] //.l = 24 => amount 
+
     this.date = this.datePicker.value;
     this.hour = utils.hourToNumber(this.hourPicker.value);
 
@@ -205,6 +208,8 @@ class Booking {
     ) {
       allAvailable = true;
     }
+
+    this.hourPicker.applyBackground(this.booked[this.date], allAvailable);
 
     for (let table of this.dom.tables) {
       let tableId = table.getAttribute(settings.booking.tableIdAttribute);
